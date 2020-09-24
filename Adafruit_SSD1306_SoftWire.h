@@ -1,5 +1,5 @@
 /*!
- * @file Adafruit_SSD1306.h
+ * @file Adafruit_SSD1306_SoftWire.h
  *
  * This is part of for Adafruit's SSD1306 library for monochrome
  * OLED displays: http://www.adafruit.com/category/63_98
@@ -38,7 +38,7 @@ typedef class HardwareSPI SPIClass;
 
 #include <Adafruit_GFX.h>
 #include <SPI.h>
-#include <Wire.h>
+#include <SoftWire.h>
 
 #if defined(__AVR__)
 typedef volatile uint8_t PortReg;
@@ -126,7 +126,7 @@ typedef uint32_t PortMask;
 class Adafruit_SSD1306 : public Adafruit_GFX {
 public:
   // NEW CONSTRUCTORS -- recommended for new projects
-  Adafruit_SSD1306(uint8_t w, uint8_t h, TwoWire *twi = &Wire,
+  Adafruit_SSD1306(uint8_t w, uint8_t h, SoftWire *twi,
                    int8_t rst_pin = -1, uint32_t clkDuring = 400000UL,
                    uint32_t clkAfter = 100000UL);
   Adafruit_SSD1306(uint8_t w, uint8_t h, int8_t mosi_pin, int8_t sclk_pin,
@@ -138,7 +138,6 @@ public:
   Adafruit_SSD1306(int8_t mosi_pin, int8_t sclk_pin, int8_t dc_pin,
                    int8_t rst_pin, int8_t cs_pin);
   Adafruit_SSD1306(int8_t dc_pin, int8_t rst_pin, int8_t cs_pin);
-  Adafruit_SSD1306(int8_t rst_pin = -1);
 
   ~Adafruit_SSD1306(void);
 
@@ -167,8 +166,9 @@ private:
   void ssd1306_command1(uint8_t c);
   void ssd1306_commandList(const uint8_t *c, uint8_t n);
 
+  char ibuffer[60];
   SPIClass *spi;
-  TwoWire *wire;
+  SoftWire *wire;
   uint8_t *buffer;
   int8_t i2caddr, vccstate, page_end;
   int8_t mosiPin, clkPin, dcPin, csPin, rstPin;

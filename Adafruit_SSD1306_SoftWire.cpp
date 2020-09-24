@@ -1,5 +1,5 @@
 /*!
- * @file Adafruit_SSD1306.cpp
+ * @file Adafruit_SSD1306_SoftWire.cpp
  *
  * @mainpage Arduino library for monochrome OLEDs based on SSD1306 drivers.
  *
@@ -50,7 +50,7 @@
 #include <util/delay.h>
 #endif
 
-#include "Adafruit_SSD1306.h"
+#include "Adafruit_SSD1306_SoftWire.h"
 #include "splash.h"
 #include <Adafruit_GFX.h>
 
@@ -69,11 +69,7 @@
 #define ssd1306_swap(a, b)                                                     \
   (((a) ^= (b)), ((b) ^= (a)), ((a) ^= (b))) ///< No-temp-var swap operation
 
-#if ARDUINO >= 100
 #define WIRE_WRITE wire->write ///< Wire write function in recent Arduino lib
-#else
-#define WIRE_WRITE wire->send ///< Wire write function in older Arduino lib
-#endif
 
 #ifdef HAVE_PORTREG
 #define SSD1306_SELECT *csPort &= ~csPinMask;       ///< Device select
@@ -167,10 +163,10 @@
     @note   Call the object's begin() function before use -- buffer
             allocation is performed there!
 */
-Adafruit_SSD1306::Adafruit_SSD1306(uint8_t w, uint8_t h, TwoWire *twi,
+Adafruit_SSD1306::Adafruit_SSD1306(uint8_t w, uint8_t h, SoftWire *twi,
                                    int8_t rst_pin, uint32_t clkDuring,
                                    uint32_t clkAfter)
-    : Adafruit_GFX(w, h), spi(NULL), wire(twi ? twi : &Wire), buffer(NULL),
+    : Adafruit_GFX(w, h), spi(NULL), wire(twi), buffer(NULL),
       mosiPin(-1), clkPin(-1), dcPin(-1), csPin(-1), rstPin(rst_pin)
 #if ARDUINO >= 157
       ,
@@ -310,25 +306,6 @@ Adafruit_SSD1306::Adafruit_SSD1306(int8_t dc_pin, int8_t rst_pin, int8_t cs_pin)
   spiSettings = SPISettings(8000000, MSBFIRST, SPI_MODE0);
 #endif
 }
-
-/*!
-    @brief  DEPRECATED constructor for I2C SSD1306 displays. Provided for
-            older code to maintain compatibility with the current library.
-            Screen size is determined by enabling one of the SSD1306_* size
-            defines in Adafruit_SSD1306.h. New code should NOT use this.
-            Only the primary I2C bus is supported.
-    @param  rst_pin
-            Reset pin (using Arduino pin numbering), or -1 if not used
-            (some displays might be wired to share the microcontroller's
-            reset pin).
-    @return Adafruit_SSD1306 object.
-    @note   Call the object's begin() function before use -- buffer
-            allocation is performed there!
-*/
-Adafruit_SSD1306::Adafruit_SSD1306(int8_t rst_pin)
-    : Adafruit_GFX(SSD1306_LCDWIDTH, SSD1306_LCDHEIGHT), spi(NULL), wire(&Wire),
-      buffer(NULL), mosiPin(-1), clkPin(-1), dcPin(-1), csPin(-1),
-      rstPin(rst_pin) {}
 
 /*!
     @brief  Destructor for Adafruit_SSD1306 object.
@@ -478,6 +455,9 @@ bool Adafruit_SSD1306::begin(uint8_t vcs, uint8_t addr, bool reset,
 
   // Setup pin directions
   if (wire) { // Using I2C
+    wire->enablePullups();
+    wire->setRxBuffer(ibuffer, 60);
+    wire->setTxBuffer(ibuffer, 60);
     // If I2C address is unspecified, use default
     // (0x3C for 32-pixel-tall displays, 0x3D for all others).
     i2caddr = addr ? addr : ((HEIGHT == 32) ? 0x3C : 0x3D);
