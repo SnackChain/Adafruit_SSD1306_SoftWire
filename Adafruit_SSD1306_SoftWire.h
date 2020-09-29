@@ -166,7 +166,7 @@ private:
   void ssd1306_command1(uint8_t c);
   void ssd1306_commandList(const uint8_t *c, uint8_t n);
 
-  char ibuffer[60];
+  char ibuffer[32];
   SPIClass *spi;
   SoftWire *wire;
   uint8_t *buffer;

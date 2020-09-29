@@ -456,8 +456,7 @@ bool Adafruit_SSD1306::begin(uint8_t vcs, uint8_t addr, bool reset,
   // Setup pin directions
   if (wire) { // Using I2C
     wire->enablePullups();
-    wire->setRxBuffer(ibuffer, 60);
-    wire->setTxBuffer(ibuffer, 60);
+    wire->setTxBuffer(ibuffer, 32);
     // If I2C address is unspecified, use default
     // (0x3C for 32-pixel-tall displays, 0x3D for all others).
     i2caddr = addr ? addr : ((HEIGHT == 32) ? 0x3C : 0x3D);
